@@ -7,4 +7,3 @@ file '/home/thiendc/projects/video_summarization/data/sample_tv360/do_merge/merg
 file '/home/thiendc/projects/video_summarization/data/sample_tv360/do_merge/merged_video_processed_7.mp4'
 file '/home/thiendc/projects/video_summarization/data/sample_tv360/do_merge/merged_video_processed_8.mp4'
 file '/home/thiendc/projects/video_summarization/data/sample_tv360/do_merge/merged_video_processed_9.mp4'
-file '/home/thiendc/projects/video_summarization/data/sample_tv360/do_merge/merged_video_processed_10.mp4'
