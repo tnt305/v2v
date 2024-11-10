@@ -1,0 +1,1 @@
+conda activate /home/thiendc/projects/.thienenv
