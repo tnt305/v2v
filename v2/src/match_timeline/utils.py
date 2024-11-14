@@ -1,5 +1,11 @@
 
+import os
+from PIL import Image
 from datetime import timedelta
+from src.logger.logger import Logging
+
+log = Logging()
+
 
 def is_timestamp(text: str):
     """
@@ -12,7 +18,7 @@ def is_timestamp(text: str):
     """
     try:
         float(text)
-        return text
+        return text.replace(".", ":")
     except ValueError:
         if ':' in text:
             before , _ = text.split(":")
@@ -43,3 +49,16 @@ def convert_to_timedelta(time_str: str) -> timedelta:
     
     # Tạo đối tượng timedelta từ phút và giây
     return timedelta(minutes=minutes, seconds=seconds)
+
+
+def scoreboard_cropper(root_dir: str, image_name: str):
+    image_path = os.path.exists(root_dir, image_name)
+    crop_area = (0,0,400,100)
+    
+    image=  Image.open(image_path)
+    cropped_image = image.crop(crop_area)
+    cropped_image_dir = image_name.split(".")[0] + "_" + "cropped" + ".png"
+    cropped_image_path = os.path.join(root_dir, cropped_image_dir)
+    cropped_image.save(cropped_image_path)
+    log.info(f'Ảnh scoreboard được lưu tại {cropped_image_dir}')
+    return cropped_image_path

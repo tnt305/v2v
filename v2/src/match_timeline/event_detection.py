@@ -1,17 +1,36 @@
 import easyocr
-from typing import List
-from src.utils import is_timestamp
+from pathlib import Path
+from typing import List, Tuple, Optional
+from src.logger.logger import Logging
+from src.match_timeline.utils import is_timestamp
 
 class ServeBall:
     def __init__(self,
+                 fps: int = 2,
                  use_gpu: bool = True,
-                 lang: str =  'en'):
+                 lang: str =  'en',
+                 batch_size: int = 2,
+                 low_text: float=  0.2,
+                 model_dir: Optional[str] = None,
+                 user_network_dir: Optional[str] = None):
+        self.fps = fps
         self.lang = lang
         self.use_gpu  = use_gpu
-        self.reader =  easyocr.Reader([lang], gpu =  use_gpu)
-
-    def scoreboard_reader(self, image_path):
-        return self.reader.readtext(image_path)
+        self.batch_size = batch_size
+        self.low_text = low_text
+        self.model_dir = model_dir or '/home/thiendc/projects/video_summarization/v2/model/easyocr'
+        self.user_network_dir = user_network_dir or '/home/thiendc/projects/video_summarization/v2/model/easyocr'
+        self.reader =  easyocr.Reader([lang], 
+                                      gpu =  use_gpu, 
+                                      model_storage_directory = self.model_dir,
+                                      user_network_directory= self.user_network_dir,
+                                      download_enabled= False)
+        self.log = Logging()
+        
+    def scoreboard_reader(self, image_path: str | Path):
+        return self.reader.readtext(image_path, 
+                                    batch_size = self.batch_size, 
+                                    low_text = self.low_text)
     
     @staticmethod
     def get_item(data: List):
@@ -56,27 +75,32 @@ class ServeBall:
         # Đừng quên thêm dòng cuối vào danh sách
         if current_line:
             lines.append(current_line)
-        
         return lines
 
-    @staticmethod
-    def timestamp2frames(timestamp: str, fps: str = 2):
-        _, seconds = map(int, timestamp.split(':'))
-        back_frames = fps * seconds
-        return back_frames
-    
+    def timestamp2frames(self, timestamp: str):
+        try:
+            print(timestamp)
+            minutes, seconds = timestamp.split(':')[0], timestamp.split(':')[-1] 
+            return self.fps * int(seconds) + self.fps * int(minutes) * 60
+        except ValueError:
+            self.log.error("Không có thông tin frame cho scoreboard, bỏ qua nội dung này")
+            pass
+        
+        
     def at_timestamp(self, image_path: str, y_threshold: int = 5):
         lines = self.get_item_by_lines(image_path, y_threshold)
         for line in lines:
             text1, text2 =  line[0][1], line[-1][1]
             if is_timestamp(text1):
                 current_time = is_timestamp(text1)
-                break
+                return self.timestamp2frames(current_time)
             elif is_timestamp(text2):
                 current_time = is_timestamp(text2)
-                break
-        
-        back_nframes = self.timestamp2frames(current_time)
+                return self.timestamp2frames(current_time)
+        return None
 
-        return back_nframes
 
+    def restart_timestamp(self, image_path: str, y_threshold: int = 5):
+        value = self.at_timestamp(image_path, y_threshold)
+        if value is not None:
+            return (45*60 - value)*self.fps

@@ -1,0 +1,5 @@
+train: /home/thiendc/projects/video_summarization/v2/data/scorebox_detection/train/images
+val: /home/thiendc/projects/video_summarization/v2/data/scorebox_detection/valid/images
+
+nc: 2
+names: ['timestamp', 'scoreboard']

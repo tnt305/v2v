@@ -6,3 +6,5 @@ video_summarization/v2/data/soccer_dataset/
 v2/data/soccer_dataset/
 *__pycache__
 *.pyc
+video_summarization/v2/data/scorebox_detection
+*.zip
